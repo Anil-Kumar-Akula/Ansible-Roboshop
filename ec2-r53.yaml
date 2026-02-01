@@ -19,6 +19,7 @@
       - cart
       - shipping
       - payment
+      - frontend
 
   tasks:
     - name: Print a message
