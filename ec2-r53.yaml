@@ -3,9 +3,9 @@
   connection: local
   vars:
     ami_id: ami-0220d79f3f480ecf5
-    vpc_id: vpc-05668f458aef2cfd7
-    sg_id: sg-0bad18c7902a09778
-    vpc_subnet_id: subnet-0e833c1c9da0ac4ad
+    vpc_id: vpc-03d7f58d2c3f8f488
+    sg_id: sg-0e297ff2d018ae51d
+    vpc_subnet_id: subnet-07ad5c8517334fd42
     domain_name: "akulaanil.fun"
     instance_type: t3.micro
     region: us-east-1
@@ -17,6 +17,8 @@
       - catalogue
       - user
       - cart
+      - shipping
+      - payment
 
   tasks:
     - name: Print a message
@@ -31,7 +33,7 @@
         vpc_subnet_id: "{{ vpc_subnet_id }}"
         security_group: "{{ sg_id }}"
         region: "{{ region }}"
-        state: absent
+        state: present
         tags:
           Name: "{{ item }}"
       loop: "{{ instances }}"
@@ -39,7 +41,7 @@
 
     - name: create route53 record
       amazon.aws.route53:
-        state: absent
+        state: present
         zone: "{{ domain_name }}"
         record: "{{ item.item }}.{{ domain_name }}"
         type: A
