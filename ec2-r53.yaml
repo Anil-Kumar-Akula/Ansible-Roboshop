@@ -1,0 +1,49 @@
+- name: checking
+  hosts: localhost
+  connection: local
+  vars:
+    ami_id: ami-0220d79f3f480ecf5
+    vpc_id: vpc-05668f458aef2cfd7
+    sg_id: sg-0bad18c7902a09778
+    vpc_subnet_id: subnet-0e833c1c9da0ac4ad
+    domain_name: "akulaanil.fun"
+    instance_type: t3.micro
+    region: us-east-1
+    instances:
+      - mongodb
+      - redis
+      - mysql
+      - rabbitmq
+      - catalogue
+      - user
+      - cart
+
+  tasks:
+    - name: Print a message
+      ansible.builtin.debug:
+        msg: "This is a local playbook."
+
+    - name: Launch EC2 Instance
+      amazon.aws.ec2_instance:
+        name: "{{ item }}"
+        image_id: "{{ ami_id }}"
+        instance_type: "{{ instance_type }}"
+        vpc_subnet_id: "{{ vpc_subnet_id }}"
+        security_group: "{{ sg_id }}"
+        region: "{{ region }}"
+        state: absent
+        tags:
+          Name: "{{ item }}"
+      loop: "{{ instances }}"
+      register: ec2_output
+
+    - name: create route53 record
+      amazon.aws.route53:
+        state: absent
+        zone: "{{ domain_name }}"
+        record: "{{ item.item }}.{{ domain_name }}"
+        type: A
+        ttl: 1
+        value: "{{ item.instances[0].private_ip_address }}"
+        overwrite: true
+      loop: "{{ ec2_output.results }}"
